@@ -38,7 +38,7 @@ defmodule Budget do
     Enum.sort(rows, &order_asc_by_amount/2)
   end
   
-  defp order_asc_by_amount(prev, next) do
-    Enum.at(prev, 2) < Enum.at(next, 2)
+  defp order_asc_by_amount([_, _, prev], [_, _, next]) do
+    prev < next
   end
 end
