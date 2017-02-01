@@ -36,6 +36,7 @@ defmodule Budget do
   defp parse_to_number(string) do
     # Using String.to_float since you want to raise in case of failures
     string
+    |> String.trim_trailing("\r")
     |> String.to_float()
     |> abs
   end
@@ -51,7 +52,7 @@ defmodule Budget do
   defp print(rows) do
     IO.puts "\nTransactions:"
     rows
-    |> Stream.each(rows, &row_to_string/1)
+    |> Stream.each(&row_to_string/1)
     |> Stream.run
   end
 
