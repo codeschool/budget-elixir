@@ -3,14 +3,13 @@ defmodule Budget do
   alias NimbleCSV.RFC4180, as: CSV
 
   def list_transactions do
-    case File.read("lib/transactions-jan.csv") do
-      {:ok, content} -> parse(content) 
-        |> filter
-        |> normalize
-        |> sort
-        |> print
-      {:error, _ } -> IO.puts "Error reading file"
-    end
+    # Use the version that raises if file does not exist
+    File.read!("lib/transactions-jan.csv")
+    |> parse 
+    |> filter
+    |> normalize
+    |> sort
+    |> print
   end
 
   defp parse(string) do
@@ -19,11 +18,11 @@ defmodule Budget do
 
   # ignores first row since we don't need it
   defp filter(rows) do
-    Stream.map(rows, fn(row) -> Enum.slice(row, 1, 3) end)
+    Stream.map(rows, fn(row) -> Enum.drop(row, 1) end)
   end
 
   defp normalize(rows) do
-    Stream.map(rows, &(parse_amount(&1)))
+    Stream.map(rows, &parse_amount(&1))
   end
 
   defp parse_amount([date, description, amount]) do
@@ -32,9 +31,12 @@ defmodule Budget do
 
   # converts amount in weird string
   # format used by the bank to number
+  # TODO: using floats here is not a good idea IMO.
+  # Or try to use integers or use the Decimal library.
   defp parse_to_number(string) do
-    Float.parse(string)
-    |> elem(0)
+    # Using String.to_float since you want to raise in case of failures
+    string
+    |> String.to_float()
     |> abs
   end
 
@@ -48,8 +50,9 @@ defmodule Budget do
 
   defp print(rows) do
     IO.puts "\nTransactions:"
-    Stream.map(rows, &row_to_string/1)
-    |> Enum.to_list
+    rows
+    |> Stream.each(rows, &row_to_string/1)
+    |> Stream.run
   end
 
   defp row_to_string([date, description, amount]) do
