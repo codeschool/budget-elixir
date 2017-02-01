@@ -13,7 +13,9 @@ defmodule Budget do
   end
 
   defp parse(string) do
-    CSV.parse_string(string)
+    string
+    |> String.replace("\r","")
+    |> CSV.parse_string()
   end
 
   # ignores first row since we don't need it
@@ -36,7 +38,6 @@ defmodule Budget do
   defp parse_to_number(string) do
     # Using String.to_float since you want to raise in case of failures
     string
-    |> String.trim_trailing("\r")
     |> String.to_float()
     |> abs
   end
